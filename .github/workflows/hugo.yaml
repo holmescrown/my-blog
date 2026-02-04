@@ -4,6 +4,7 @@ on:
   push:
     branches: ["main"]
 
+# 确保 Action 有权将生成的网页推送到 Pages 服务
 permissions:
   contents: read
   pages: write
@@ -16,18 +17,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: recursive # 自动拉取主题子模块
           fetch-depth: 0
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          # 升级到 0.128.0 以上版本以支持 hash 函数
-          hugo-version: '0.128.0' 
+          # 必须使用 0.154.0 或更高版本以匹配 hugo-theme-stack 的要求
+          hugo-version: '0.154.0' 
           extended: true
 
       - name: Build with Hugo
-        run: hugo --minify
+        # 加上 --environment production 确保以生产模式构建
+        run: hugo --minify --environment production
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
