@@ -3,7 +3,7 @@ on:
   push:
     branches: ["main"]
 permissions:
-  contents: read
+  contents: write    # 这里必须改成 write，否则它没权限帮你创建新分支
   pages: write
   id-token: write
 jobs:
@@ -17,14 +17,22 @@ jobs:
           fetch-depth: 0
       - name: Force Download Hugo 0.154.0
         run: |
-          # 直接从官方下载，不走任何缓存
           curl -L https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz -o hugo.tar.gz
           tar -xzf hugo.tar.gz
-          # 强行覆盖系统路径，确保运行的是 0.154.0
           sudo mv hugo /usr/bin/hugo
           hugo version
       - name: Build
         run: hugo --minify --environment production
+      
+      # --- 以下是新增的“同步到分支”动作，专门为了让 Vercel 能看见 ---
+      - name: Push to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+      # -------------------------------------------------------
+
       - name: Upload
         uses: actions/upload-pages-artifact@v3
         with:
