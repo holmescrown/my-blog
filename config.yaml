@@ -1,4 +1,30 @@
-baseURL: "https://holmescrown.github.io/my-blog/"
-languageCode: zh-cn
-title: 白乌鸦驿站 
-theme: hugo-theme-stack
+# 基础配置
+baseURL: "/"
+title: "Wwen的博客"
+theme: "hugo-theme-stack"
+languageCode: "zh-cn"
+
+# ---------------------------------------------------------
+# 关键修复方案：解决 GetRemote 图片超时及模板 Height 报错
+# ---------------------------------------------------------
+params:
+    mainSections:
+        - post
+    # 针对 hugo-theme-stack 的核心配置
+    imageProcessing:
+        content:
+            enabled: false # 禁用内容图片处理，防止因下载失败导致 Height 报错
+        cover:
+            enabled: false # 建议封面也关掉，防止远程封面图导致崩溃
+
+# 安全配置：放行远程资源访问
+security:
+  http:
+    methods: [GET]
+    urls: ['.*']
+
+# 允许 Markdown 使用 HTML（比如插入 iframe 或样式）
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
