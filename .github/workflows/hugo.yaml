@@ -4,7 +4,6 @@ on:
   push:
     branches: ["main"]
 
-# 确保 Action 有权将生成的网页推送到 Pages 服务
 permissions:
   contents: read
   pages: write
@@ -17,18 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive # 自动拉取主题子模块
+          submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          # 必须使用 0.154.0 或更高版本以匹配 hugo-theme-stack 的要求
-          hugo-version: '0.154.0' 
-          extended: true
+      - name: Install Hugo (Direct Download)
+        run: |
+          # 强制拉取 0.154.0 版本的二进制文件，不再依赖插件自动识别
+          wget https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz
+          tar -xzf hugo_extended_0.154.0_linux-amd64.tar.gz
+          sudo mv hugo /usr/local/bin/
 
       - name: Build with Hugo
-        # 加上 --environment production 确保以生产模式构建
         run: hugo --minify --environment production
 
       - name: Upload artifact
