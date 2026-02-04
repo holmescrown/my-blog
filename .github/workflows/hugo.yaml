@@ -1,13 +1,13 @@
-name: Deploy Hugo site to Vercel Source
+name: Deploy Hugo site to gh-pages
 on:
   push:
     branches: ["main"]
 
 permissions:
-  contents: write  # 必须，用于推送 gh-pages 分支
+  contents: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,21 +16,22 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      # 关键步骤：用官方工具强制安装指定版本，它会自动处理 PATH 优先级
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: '0.154.0'
-          extended: true
+          extended: true # 必须开启，Stack 主题需要处理 SCSS
 
       - name: Build
+        # 使用特定的构建命令，确保生产环境路径正确
         run: hugo --minify --environment production
-      
-      # 核心：只负责把 public 文件夹的内容推送到 gh-pages 分支
-      # Vercel 会在检测到该分支变动后自动抓取
+
+      # 只推送 gh-pages 分支，供 Vercel 抓取
       - name: Push to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           publish_branch: gh-pages
-          force_orphan: true # 如果是为了 Vercel，建议设为 true，保持分支干净
+          force_orphan: true # 保持分支只有静态文件，减小 Vercel 读取压力
