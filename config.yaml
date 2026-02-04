@@ -1,6 +1,6 @@
 # 基础配置
 baseURL: "https://vercel.com/owens-projects-ad5ad377/my-blog"
-title: "Wwen的博客"
+title: "Owen的博客"
 theme: "hugo-theme-stack"
 languageCode: "zh-cn"
 
