@@ -3,7 +3,7 @@ on:
   push:
     branches: ["main"]
 permissions:
-  contents: write    # 这里必须改成 write，否则它没权限帮你创建新分支
+  contents: write    # 必须从 read 改为 write，否则没法创建 gh-pages 分支
   pages: write
   id-token: write
 jobs:
@@ -24,14 +24,13 @@ jobs:
       - name: Build
         run: hugo --minify --environment production
       
-      # --- 以下是新增的“同步到分支”动作，专门为了让 Vercel 能看见 ---
+      # 这一步是为了让 Vercel 能够找到 Production Branch
       - name: Push to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           publish_branch: gh-pages
-      # -------------------------------------------------------
 
       - name: Upload
         uses: actions/upload-pages-artifact@v3
