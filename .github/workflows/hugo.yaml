@@ -19,18 +19,24 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Force Install Hugo Extended 0.154.0
+      - name: Force Install Hugo 0.154.0
         run: |
-          # 绕过所有插件，直接从官方下载 Linux 64位扩展版
-          wget https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz
-          tar -xzf hugo_extended_0.154.0_linux-amd64.tar.gz
-          # 强制替换系统路径里的 hugo
+          # 1. 下载指定的 0.154.0 扩展版二进制包
+          curl -L https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz -o hugo.tar.gz
+          
+          # 2. 解压
+          tar -xzf hugo.tar.gz
+          
+          # 3. 强制覆盖系统默认的 hugo 命令路径
+          sudo chmod +x hugo
           sudo mv hugo /usr/local/bin/hugo
-          # 验证版本，如果不显示 0.154.0 这一步就会直接报错停止
-          hugo version | grep "v0.154.0"
+          
+          # 4. 打印版本确认，如果这里不是 0.154.0，脚本会立即中断报错
+          hugo version
 
       - name: Build with Hugo
-        run: hugo --minify --environment production
+        # 使用刚刚强制安装的路径运行
+        run: /usr/local/bin/hugo --minify --environment production
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
