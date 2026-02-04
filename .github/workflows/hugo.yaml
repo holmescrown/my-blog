@@ -18,15 +18,17 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+
       - name: Setup Hugo
-        uses: actions/configure-pages@v4
-      - name: Install Hugo
-        run: |
-          wget https://github.com/gohugoio/hugo/releases/download/v0.121.2/hugo_extended_0.121.2_linux-amd64.tar.gz
-          tar -xzf hugo_extended_0.121.2_linux-amd64.tar.gz
-          sudo mv hugo /usr/local/bin/
+        uses: peaceiris/actions-hugo@v3
+        with:
+          # 升级到 0.128.0 以上版本以支持 hash 函数
+          hugo-version: '0.128.0' 
+          extended: true
+
       - name: Build with Hugo
         run: hugo --minify
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
