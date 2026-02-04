@@ -1,0 +1,36 @@
+name: Production Build
+on:
+  push:
+    branches: ["main"]
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # 确保主题代码被拉取
+          fetch-depth: 0
+
+      - name: Force Install Hugo Extended 0.154.0
+        run: |
+          # 强制下载 Extended 版以支持 Stack 主题的 SCSS
+          curl -L https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz -o hugo.tar.gz
+          tar -xzf hugo.tar.gz
+          chmod +x ./hugo
+          ./hugo version # 验证是否为 0.154.0
+
+      - name: Build Site
+        # 使用 ./hugo 确保调用的是当前目录刚下载的版本，彻底解决 hash 函数未定义问题
+        run: ./hugo --minify
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
