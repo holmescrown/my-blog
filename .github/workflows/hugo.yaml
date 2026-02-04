@@ -1,15 +1,13 @@
-name: Deploy Hugo site to Pages
+name: Deploy Hugo site to Vercel Source
 on:
   push:
     branches: ["main"]
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write  # 必须，用于推送 gh-pages 分支
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,37 +16,21 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      # 【关键：使用官方推荐方式安装指定版本】
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.154.0' # 精确匹配主题要求的最低版本
-          extended: true          # 必须开启 extended 版，否则无法处理 Sass/SCSS
+          hugo-version: '0.154.0'
+          extended: true
 
       - name: Build
         run: hugo --minify --environment production
       
-      # 部署到 GitHub Pages 分支 (用于 Vercel 或旧版 Pages)
+      # 核心：只负责把 public 文件夹的内容推送到 gh-pages 分支
+      # Vercel 会在检测到该分支变动后自动抓取
       - name: Push to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           publish_branch: gh-pages
-
-      # 部署到 GitHub Pages 官方原生环境
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./public
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          force_orphan: true # 如果是为了 Vercel，建议设为 true，保持分支干净
