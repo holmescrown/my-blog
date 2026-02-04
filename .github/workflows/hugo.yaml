@@ -1,36 +1,30 @@
-name: Production Build
-on:
-  push:
-    branches: ["main"]
-permissions:
-  contents: write
+# 基础配置
+baseURL: "https://my-blog-seven-pi-27.vercel.app/"
+title: "我的博客"
+theme: "hugo-theme-stack"
+languageCode: "zh-cn"
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive # 确保主题代码被拉取
-          fetch-depth: 0
+# ---------------------------------------------------------
+# 关键修复方案：解决 GetRemote 图片超时及模板 Height 报错
+# ---------------------------------------------------------
+params:
+    # 针对 hugo-theme-stack 的核心配置
+    imageProcessing:
+        content:
+            enabled: false # 禁用内容图片处理，防止因下载失败导致 Height 报错
+        cover:
+            enabled: true  # 封面图如果也是远程的，建议也设为 false
 
-      - name: Force Install Hugo Extended 0.154.0
-        run: |
-          # 强制下载 Extended 版以支持 Stack 主题的 SCSS
-          curl -L https://github.com/gohugoio/hugo/releases/download/v0.154.0/hugo_extended_0.154.0_linux-amd64.tar.gz -o hugo.tar.gz
-          tar -xzf hugo.tar.gz
-          chmod +x ./hugo
-          ./hugo version # 验证是否为 0.154.0
+# 安全配置：允许 Hugo 获取远程资源（虽然我们禁用了处理，但保留基础访问权限）
+security:
+  http:
+    methods: [GET]
+    urls: ['.*'] # 允许匹配所有 URL
 
-      - name: Build Site
-        # 使用 ./hugo 确保调用的是当前目录刚下载的版本，彻底解决 hash 函数未定义问题
-        run: ./hugo --minify
-
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          publish_branch: gh-pages
-          force_orphan: true
+# ---------------------------------------------------------
+# 其他推荐配置
+# ---------------------------------------------------------
+markup:
+  goldmark:
+    renderer:
+      unsafe: true # 允许在 Markdown 中使用 HTML
