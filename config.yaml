@@ -1,4 +1,4 @@
-baseURL: /
+baseURL: https://holmescrown.github.io/my-blog/
 languageCode: zh-cn
 title: 白乌鸦驿站 
 theme: hugo-theme-stack
